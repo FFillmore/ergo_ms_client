@@ -1,0 +1,52 @@
+{
+"menuSections": [
+        {
+        "icon": "Trees",
+        "routeName": "BioModule",
+        "title": "Био модули",
+        "list": [
+                { 
+                "routeName": "Sites", 
+                "name": "Гео: площадки"
+                },
+                { 
+                "routeName": "SiteConsolidatedAnalysis", 
+                "name": "Гео: сводный анализ"
+                },
+                { 
+                "routeName": "SitesMap", 
+                "name": "Гео: карта"
+                },
+                {
+                "routeName": "ZoologySpecies",
+                "name": "Зоология: виды"
+                },
+                {
+                "routeName": "ZoologyPopulations",
+                "name": "Зоология: популяции"
+                },
+                {
+                "routeName": "ZoologyObservations",
+                "name": "Зоология: наблюдения"
+                },
+                {
+                "routeName": "BioInteractions",
+                "name": "Растение - животное"
+                },
+                { "routeName": "Successions", "name": "Сукцессии" },
+                { "routeName": "SuccessionStages", "name": "Сукцессии: стадии" },
+                { "routeName": "SuccessionStageSpecies", "name": "Сукцессии: виды" }
+                ,
+                { "routeName": "PaleoSamples", "name": "Палео: образцы" },
+                { "routeName": "PaleoImages", "name": "Палео: изображения" },
+                { "routeName": "FloraLists", "name": "Флористика: списки" },
+                { "routeName": "FloraItems", "name": "Флористика: элементы" },
+                { "routeName": "GeomorphProfiles", "name": "Геоморфология: профили" },
+                { "routeName": "GeomorphLayers", "name": "Геоморфология: слои" },
+                { "routeName": "GeomorphImages", "name": "Геоморфология: изображения" }
+            ]
+        }
+    ]
+}
+  
+  

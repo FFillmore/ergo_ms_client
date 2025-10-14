@@ -51,4 +51,14 @@ app.use(setupCalendar, {
   color: 'red',
 })
 
+try {
+  app.use(
+    createYmaps({
+      apikey: import.meta.env.VITE_YANDEX_MAPS_API_KEY,
+    }),
+  )
+} catch (error) {
+  console.error('Ошибка при инициализации Yandex Maps:', error)
+}
+
 app.mount('#app')
