@@ -1,0 +1,24 @@
+{
+  "menuSections": [
+    {
+      "icon": "Landmark",
+      "routeName": "ErgoCityStruct",
+      "title": "Эргокаркас города",
+      "list": [
+        {
+          "routeName": "MapUpload",
+          "name": "Загрузка карт"
+        },
+        {
+          "routeName": "MyUploads",
+          "name": "Мои загрузки"
+        },
+        {
+          "routeName": "MyTasks",
+          "name": "Мои задачи"
+        }
+      ]
+    }
+  ]
+}
+

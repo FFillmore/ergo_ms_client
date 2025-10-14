@@ -12,8 +12,9 @@ const scrollContainer = ref(null)
 const isScrolledToEnd = ref(false)
 const isScrolledToStart = ref(true)
 
+// Computed свойство для контроля видимости навигации
 const showNavigation = computed(() => {
-  return props.data.some(item => item.title === 'Все' && route.name === item.link ||route.name === 'PersonalProjects'||route.name === 'InvitedProjects'||route.name==='CreateProject')
+  return props.data && props.data.length > 0
 })
 
 const handleScroll = () => {
@@ -34,7 +35,7 @@ const handleScroll = () => {
     class="navbar-scroll"
     :class="{ 
       scrolledToEnd: isScrolledToEnd, 
-      scrolledToStart: isScrolledToStart,
+      isScrolledToStart: isScrolledToStart,
       'd-none': !showNavigation
     }"
   >
@@ -44,7 +45,7 @@ const handleScroll = () => {
           <RouterLink
             :to="{ name: item.link }"
             class="btn fw-bold text-center"
-            active-class="btn-primary"
+            exact-active-class="btn-primary"
           >
             <div class="d-flex align-items-center justify-content-center gap-1">
               <div class="icon-flex"><component v-if="item.icon" :is="item.icon" :size="20" /></div>
@@ -70,35 +71,6 @@ li {
 .navbar-scroll {
   position: relative;
   flex-grow: 1;
-
-  &::after {
-    content: '';
-    position: absolute;
-    z-index: 1;
-    top: 0;
-    right: 0;
-    width: 15%;
-    height: 100%;
-    pointer-events: none;
-    background: linear-gradient(to left, var(--bs-body-bg), transparent);
-    transition: opacity $transition;
-  }
-  &::before {
-    content: '';
-    position: absolute;
-    z-index: 1;
-    top: 0;
-    left: 0;
-    width: 15%;
-    height: 100%;
-    pointer-events: none;
-    background: linear-gradient(to right, var(--bs-body-bg), transparent);
-    transition: opacity $transition;
-  }
-
-  ::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 .navbar-scroll-wrapper {
@@ -107,10 +79,9 @@ li {
   overflow-y: hidden;
   position: relative;
   scrollbar-width: none;
-}
 
-.navbar-scroll.scrolledToEnd::after,
-.navbar-scroll.scrolledToStart::before {
-  opacity: 0;
+  ::-webkit-scrollbar {
+    display: none;
+  }
 }
 </style>

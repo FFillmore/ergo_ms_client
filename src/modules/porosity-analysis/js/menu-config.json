@@ -1,0 +1,20 @@
+{
+  "menuSections": [
+    {
+      "icon": "Microscope",
+      "routeName": "PorosityAnalysis",
+      "title": "Анализ пористости",
+      "list": [
+        {
+          "routeName": "PorosityAnalysisMain",
+          "name": "Создание анализа"
+        },
+        {
+          "routeName": "PorosityAnalysisList",
+          "name": "Анализируемые образцы"
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,24 @@
+{
+  "menuSections": [
+    {
+      "icon": "Zap",
+      "routeName": "ImpulsAnalysis",
+      "title": "Анализ импульсов",
+      "list": [
+        {
+          "routeName": "ImpulsAnalysisMain",
+          "name": "Загрузка файлов"
+        },
+        {
+          "routeName": "ImpulsAnalysisList",
+          "name": "Мои анализы"
+        },
+        {
+          "routeName": "ImpulsAnalysisProtocols",
+          "name": "Протоколы"
+        }
+      ]
+    }
+  ]
+}
+

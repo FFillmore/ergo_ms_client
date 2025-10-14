@@ -1,0 +1,40 @@
+{
+  "menuSections": [
+    {
+      "icon": "ChartCandlestick",
+      "routeName": "EducationAnalyticModule",
+      "title": "Учебная аналитика",
+      "list": [
+        { 
+          "routeName": "MainPage", 
+          "name": "Общее"
+        },
+        { 
+          "routeName": "StatsPage", 
+          "name": "Статистика"
+        },
+        { 
+          "routeName": "LearningTrackPage", 
+          "name": "Траектория"
+        },
+        { 
+          "routeName": "ReportsPage", 
+          "name": "Отчёты"
+        },
+        { 
+          "routeName": "ProfilePage", 
+          "name": "Профиль"
+        },
+        { 
+          "routeName": "AdminPanelPage", 
+          "name": "Админ-панель"
+        },
+        { 
+          "routeName": "SuperUserPage", 
+          "name": "SAdmin"
+        }
+      ]
+    }
+  ]
+}
+

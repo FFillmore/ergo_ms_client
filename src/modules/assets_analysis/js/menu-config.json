@@ -1,0 +1,10 @@
+{
+  "menuSections": [
+    {
+      "icon": "Code2",
+      "routeName": "AssetsAnalyse",
+      "title": "Анализ курсов активов"
+    }
+  ]
+}
+

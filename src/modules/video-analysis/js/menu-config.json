@@ -1,0 +1,16 @@
+{
+  "menuSections": [
+    {
+      "icon": "Video",
+      "routeName": "VideoAnalysis",
+      "title": "Анализ видео",
+      "list": [
+        {
+          "routeName": "VideoAnalysisList",
+          "name": "Перевод видео"
+        }
+      ]
+    }
+  ]
+}
+

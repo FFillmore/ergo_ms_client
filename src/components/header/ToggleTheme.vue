@@ -1,8 +1,10 @@
 <script setup>
 import { LaptopMinimal, Moon, Sun } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 
 const theme = ref(localStorage.getItem('theme') || 'auto')
+const emit = defineEmits(['dropdown-toggle'])
+const dropdownRef = ref(null)
 
 // Изменение темы
 const changeTheme = (newTheme) => {
@@ -30,10 +32,26 @@ const themes = ref([
   { icon: Moon, title: 'Тёмная', theme: 'dark' },
   { icon: LaptopMinimal, title: 'Системная', theme: 'auto' },
 ])
+
+// Обработчики событий dropdown
+onMounted(() => {
+  if (dropdownRef.value) {
+    const dropdownElement = dropdownRef.value.querySelector('[data-bs-toggle="dropdown"]')
+    if (dropdownElement) {
+      dropdownElement.addEventListener('show.bs.dropdown', () => {
+        emit('dropdown-toggle', true)
+      })
+      
+      dropdownElement.addEventListener('hide.bs.dropdown', () => {
+        emit('dropdown-toggle', false)
+      })
+    }
+  }
+})
 </script>
 
 <template>
-  <div class="dropdown-center header-dropdown-center">
+  <div ref="dropdownRef" class="dropdown-center header-dropdown-center">
     <div data-bs-toggle="dropdown" aria-expanded="false" data-bs-offset="0,20">
       <div class="header-btn" v-tooltip title="Внешний вид">
         <component :is="currentIcon" :size="24" />

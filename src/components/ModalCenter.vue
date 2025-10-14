@@ -4,6 +4,7 @@ defineProps({
   customClass: { type: String, required: false, default: '' },
   title: { type: String, required: true },
   showFooter: { type: Boolean, required: false, default: false },
+  dialogClass: { type: String, required: false, default: '' },
 })
 const emit = defineEmits(['closemodal'])
 </script>
@@ -17,7 +18,7 @@ const emit = defineEmits(['closemodal'])
     aria-labelledby="centralModalLabel"
     aria-hidden="true"
   >
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" :class="dialogClass">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="centralModalLabel">

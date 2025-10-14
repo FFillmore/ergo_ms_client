@@ -1,5 +1,6 @@
 import axios from 'axios'
 import Cookies from 'js-cookie'
+import tokenService from '@/core/cms/js/tokenService'
 
 // Класс для работы с API
 class ApiClient {
@@ -13,6 +14,40 @@ class ApiClient {
                 'Content-Type': 'application/json',
             },
         });
+
+        // Интерцептор запросов: тихий refresh перед отправкой, если срок на исходе
+        this.client.interceptors.request.use(async (config) => {
+            if (tokenService.shouldRefresh()) {
+                try { await tokenService.tryRefresh() } catch (_) { /* игнор, дадим серверу ответить 401 */ }
+            }
+            return config
+        })
+
+        // Интерцептор ответов: одноразовый silent refresh при 401 и повтор
+        this.client.interceptors.response.use(
+            (response) => response,
+            async (error) => {
+                const originalRequest = error.config
+                if (error.response?.status === 401 && !originalRequest?._retry) {
+                    originalRequest._retry = true
+                    try {
+                        await tokenService.tryRefresh()
+                        // проставим новый Authorization и повторим запрос
+                        this._addAuthToken(originalRequest)
+                        return this.client(originalRequest)
+                    } catch (e) {
+                        // падение refresh — выполняем logout и редирект
+                        this.logout()
+                        if (typeof window !== 'undefined' && window.location) {
+                            if (!window.location.pathname.includes('/start') && !window.location.pathname.includes('/login')) {
+                                window.location.href = '/start'
+                            }
+                        }
+                    }
+                }
+                return Promise.reject(error)
+            }
+        )
     }
 
     // Основные методы запросов
@@ -26,7 +61,9 @@ class ApiClient {
             const response = await this.client.get(endpoint, config);
             return this.handleResponse(response);
         } catch (error) {
-            return this.handleError(error);
+            const errorInfo = this.handleError(error);
+            // Пробрасываем ошибку дальше для обработки в composables
+            throw error;
         }
     }
 
@@ -50,7 +87,9 @@ class ApiClient {
             const response = await this.client.post(endpoint, data, config);
             return this.handleResponse(response);
         } catch (error) {
-            return this.handleError(error);
+            const errorInfo = this.handleError(error);
+            // Пробрасываем ошибку дальше для обработки в composables
+            throw error;
         }
     }
 
@@ -74,7 +113,9 @@ class ApiClient {
             const response = await this.client.put(endpoint, data, config);
             return this.handleResponse(response);
         } catch (error) {
-            return this.handleError(error);
+            const errorInfo = this.handleError(error);
+            // Пробрасываем ошибку дальше для обработки в composables
+            throw error;
         }
     }
 
@@ -88,7 +129,9 @@ class ApiClient {
             const r = await this.client.patch(endpoint, data, cfg)
             return this.handleResponse(r)
         } catch (e) {
-            return this.handleError(e)
+            const errorInfo = this.handleError(e)
+            // Пробрасываем ошибку дальше для обработки в composables
+            throw e
         }
     }
 
@@ -102,11 +145,13 @@ class ApiClient {
             const response = await this.client.delete(endpoint, config);
             return this.handleResponse(response);
         } catch (error) {
-            return this.handleError(error);
+            const errorInfo = this.handleError(error);
+            // Пробрасываем ошибку дальше для обработки в composables
+            throw error;
         }
     }
 
-    async upload(endpoint, formData, needToken = true) {
+    async upload(endpoint, formData, needToken = true, onUploadProgress) {
         try {
             const config = {
                 headers: {
@@ -115,6 +160,9 @@ class ApiClient {
             };
             if (needToken) {
                 this._addAuthToken(config);
+            }
+            if (typeof onUploadProgress === 'function') {
+                config.onUploadProgress = onUploadProgress;
             }
             const response = await this.client.post(endpoint, formData, config);
             return this.handleResponse(response);
@@ -136,14 +184,78 @@ class ApiClient {
         }
     }
 
+    // Метод для скачивания файлов (бинарные данные)
+    async downloadFile(endpoint, params = {}, method = 'GET', needToken = true) {
+        try {
+            console.log('Скачивание файла:', endpoint, params, 'Method:', method);
+            const config = { 
+                responseType: 'blob' // Важно для бинарных данных
+            };
+            if (needToken) {
+                this._addAuthToken(config);
+            }
+            
+            let response;
+            if (method.toUpperCase() === 'POST') {
+                // Для POST запросов передаем параметры в теле запроса
+                response = await this.client.post(endpoint, params, config);
+            } else {
+                // Для GET запросов передаем параметры как query parameters
+                config.params = params;
+                response = await this.client.get(endpoint, config);
+            }
+            
+            console.log('Конфигурация запроса:', config);
+            console.log('Ответ сервера:', response);
+            console.log('Тип данных:', typeof response.data, 'Is Blob:', response.data instanceof Blob);
+            console.log('Размер данных:', response.data?.size);
+            
+            // Проверяем, что получили blob
+            if (response.data instanceof Blob) {
+                return {
+                    success: true,
+                    data: response.data, // Это blob объект
+                    message: 'Файл успешно загружен',
+                    status: response.status,
+                    headers: response.headers
+                };
+            } else {
+                console.error('Получен не blob объект:', response.data);
+                return {
+                    success: false,
+                    message: 'Получен некорректный формат файла',
+                    data: null
+                };
+            }
+        } catch (error) {
+            console.error('Ошибка при скачивании файла:', error);
+            console.error('Детали ошибки:', {
+                message: error.message,
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data
+            });
+            
+            // Возвращаем объект с ошибкой вместо throw
+            return {
+                success: false,
+                message: error.response?.data?.message || error.message || 'Ошибка при скачивании файла',
+                data: null,
+                status: error.response?.status
+            };
+        }
+    }
+
     // Вспомогательный метод для добавления токена авторизации в конфигурацию
     _addAuthToken(config) {
-        const token = Cookies.get('token');
+        const token = tokenService.getAccess();
         if (token) {
             if (!config.headers) {
                 config.headers = {};
             }
             config.headers.Authorization = `Bearer ${token}`;
+        } else {
+            console.warn('Токен не найден в cookies');
         }
         return config;
     }
@@ -153,11 +265,40 @@ class ApiClient {
         Cookies.remove('refresh');
         Cookies.remove('userId');
     }
+
+    // Проверяем, есть ли токен и не истек ли он
+    isTokenValid() {
+        const token = Cookies.get('token');
+        if (!token) {
+            console.log('Токен отсутствует');
+            return false;
+        }
+        
+        // Простая проверка - если токен есть, считаем его валидным
+        // В реальном приложении можно добавить проверку JWT payload
+        console.log('Токен найден, длина:', token.length);
+        return true;
+    }
+
+    // Получаем текущий токен
+    getCurrentToken() {
+        return Cookies.get('token');
+    }
     // Обработчики ответов
     handleResponse(response) {
         // Успешные статусы: 200 OK, 201 Created, 204 No Content и т.д.
         if (response.status >= 200 && response.status < 300) {
             const data = response.data || {};
+
+            // Для DELETE-запросов с кодом 204 (No Content) считаем успешным
+            if (response.status === 204) {
+                return {
+                    success: true,
+                    data: null,
+                    message: 'Успешно удалено',
+                    status: response.status
+                };
+            }
 
             // Если сервер вернул success: false, сохраняем это значение
             // Иначе считаем ответ успешным по умолчанию
@@ -165,7 +306,7 @@ class ApiClient {
 
             return {
                 success,
-                data,
+                data: data.data || data,
                 message: data.message,
                 status: response.status
             };
@@ -189,7 +330,7 @@ class ApiClient {
         const status = error.response?.status;
         const statusText = error.response?.statusText;
 
-        console.error(`API Error [${status}${statusText ? ' ' + statusText : ''}]:`, errorMessage);
+        console.error(`API Error [${status || 'undefined'}${statusText ? ' ' + statusText : ''}]:`, errorMessage);
 
         return {
             success: false,
@@ -197,6 +338,16 @@ class ApiClient {
             status: status,
             errors: error.response?.data
         };
+    }
+
+    // Получить базовый URL
+    getBaseUrl() {
+        return this.baseUrl;
+    }
+
+    // Получить токен авторизации
+    getAuthToken() {
+        return tokenService.getAccess();
     }
 }
 

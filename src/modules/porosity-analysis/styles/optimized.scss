@@ -1,0 +1,302 @@
+// Оптимизированные стили для модуля анализа пористости
+
+// Переменные
+$primary-color: #007bff;
+$success-color: #28a745;
+$warning-color: #ffc107;
+$danger-color: #dc3545;
+$info-color: #17a2b8;
+$secondary-color: #6c757d;
+
+$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$success-gradient: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+$warning-gradient: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+$danger-gradient: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+$secondary-gradient: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+
+$border-radius: 15px;
+$border-radius-sm: 8px;
+$box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+$box-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+// Миксины
+@mixin card-base {
+  background: white;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+@mixin card-hover {
+  transform: translateY(-2px);
+  box-shadow: $box-shadow-hover;
+}
+
+@mixin button-gradient($gradient) {
+  background: $gradient;
+  border: none;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+}
+
+@mixin form-control {
+  border: 2px solid #e2e8f0;
+  border-radius: $border-radius-sm;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+  
+  &:focus {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    background: white;
+    outline: none;
+  }
+  
+  &::placeholder {
+    color: #a0aec0;
+  }
+}
+
+@mixin status-badge($bg-color, $text-color) {
+  background-color: $bg-color;
+  color: $text-color;
+  border: 1px solid lighten($bg-color, 10%);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// Базовые стили
+.porosity-analysis-main,
+.porosity-analyses-list {
+  padding: 2rem;
+  min-height: 100vh;
+  background: var(--bs-gray-100);
+}
+
+// Карточки
+.card-base {
+  @include card-base;
+  
+  &:hover {
+    @include card-hover;
+  }
+}
+
+// Кнопки
+.btn-gradient {
+  @include button-gradient($primary-gradient);
+}
+
+.btn-success-gradient {
+  @include button-gradient($success-gradient);
+}
+
+.btn-warning-gradient {
+  @include button-gradient($warning-gradient);
+}
+
+.btn-danger-gradient {
+  @include button-gradient($danger-gradient);
+}
+
+// Формы
+.form-control {
+  @include form-control;
+}
+
+.form-select {
+  @include form-control;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  padding-right: 2.25rem;
+}
+
+// Статусы
+.status-pending {
+  @include status-badge(#fff3cd, #856404);
+}
+
+.status-processing {
+  @include status-badge(#d1ecf1, #0c5460);
+}
+
+.status-completed {
+  @include status-badge(#d4edda, #155724);
+}
+
+.status-failed {
+  @include status-badge(#f8d7da, #721c24);
+}
+
+// Сетки
+.analyses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.parameters-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+// Адаптивность
+@media (max-width: 768px) {
+  .porosity-analysis-main,
+  .porosity-analyses-list {
+    padding: 1rem;
+  }
+  
+  .analyses-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .parameters-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-control,
+  .form-select {
+    font-size: 0.9rem;
+    padding: 0.625rem 0.875rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .analyses-grid {
+    gap: 0.75rem;
+  }
+  
+  .form-control,
+  .form-select {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+// Утилиты
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 1rem; }
+.gap-4 { gap: 1.5rem; }
+
+// Анимации
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+// Спиннер
+.spinner-custom {
+  width: 2rem;
+  height: 2rem;
+  border: 0.25rem solid #f3f3f3;
+  border-top: 0.25rem solid $primary-color;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Переходы
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+.transition-colors {
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.transition-transform {
+  transition: transform 0.2s ease;
+}
+
+// Тени
+.shadow-sm {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.shadow {
+  box-shadow: $box-shadow;
+}
+
+.shadow-lg {
+  box-shadow: $box-shadow-hover;
+}
+
+// Границы
+.border-primary { border-color: $primary-color !important; }
+.border-success { border-color: $success-color !important; }
+.border-warning { border-color: $warning-color !important; }
+.border-danger { border-color: $danger-color !important; }
+.border-info { border-color: $info-color !important; }
+
+// Фоны
+.bg-primary { background-color: $primary-color !important; }
+.bg-success { background-color: $success-color !important; }
+.bg-warning { background-color: $warning-color !important; }
+.bg-danger { background-color: $danger-color !important; }
+.bg-info { background-color: $info-color !important; }
+
+// Текст
+.text-primary { color: $primary-color !important; }
+.text-success { color: $success-color !important; }
+.text-warning { color: $warning-color !important; }
+.text-danger { color: $danger-color !important; }
+.text-info { color: $info-color !important; }

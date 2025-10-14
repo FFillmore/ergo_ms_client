@@ -1,11 +1,14 @@
 import router from '@/js/routers.js'
+import '@/core/cms/js/authGuard.js' // Подключаем защиту аутентификации
+
+// Подключаем систему логирования (автоматически переопределяет console)
+import '@/js/utils/logger.js'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import '@he-tree/vue/style/default.css'
 import '@he-tree/vue/style/material-design.css'
 import { Tooltip } from 'bootstrap/dist/js/bootstrap.bundle.min.js'
-
 
 import '@/scss/styles.scss'
 
@@ -15,7 +18,6 @@ import VueApexCharts from 'vue3-apexcharts'
 import { setupCalendar } from 'v-calendar'
 import { plugin as Slicksort } from 'vue-slicksort'
 import Toast from 'vue-toastification'
-import { createYmaps } from 'vue-yandex-maps'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -48,15 +50,5 @@ app.use(Toast, {
 app.use(setupCalendar, {
   color: 'red',
 })
-
-try {
-  app.use(
-    createYmaps({
-      apikey: import.meta.env.VITE_YANDEX_MAPS_API_KEY,
-    }),
-  )
-} catch (error) {
- //console.error('Ошибка при инициализации Yandex Maps:', error)
-}
 
 app.mount('#app')

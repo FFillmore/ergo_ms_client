@@ -6,18 +6,30 @@ import vueDevTools from 'vite-plugin-vue-devtools' // Импорт плагин�
 
 import dotenv from 'dotenv'
 import path from 'path'
+import fs from 'fs'
+import { collectEnvFilesFromConfigs } from './src/js/environment/methods.js'
 
 // Получение абсолютного пути к файлу .env, находящемуся на одну папку выше
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-// Загрузка переменных окружения из файла .env, находящегося на одну папку выше
-dotenv.config({ path: path.resolve(__dirname, '../.env') })
+
+// Сначала загружаем основной .env файл (если существует)
+const mainEnvPath = path.resolve(__dirname, '../.env')
+if (fs.existsSync(mainEnvPath)) {
+  dotenv.config({ path: mainEnvPath })
+}
+
+// Затем загружаем переменные из папки configs (они имеют приоритет)
+const configsEnvVars = collectEnvFilesFromConfigs()
+for (const [key, value] of Object.entries(configsEnvVars)) {
+  process.env[key] = value
+}
 
 // Определение конфигурации Vite
 export default defineConfig({
   // Подключение плагинов
   plugins: [
     vue(), // Подключение плагина Vue для Vite
-    vueDevTools(), // Подключение плагина Vue DevTools для Vite
+    //vueDevTools(), // Подключение плагина Vue DevTools для Vite
   ],
 
   // Настройка разрешения путей
@@ -52,5 +64,7 @@ export default defineConfig({
     'import.meta.env.VITE_API_HOST': JSON.stringify(process.env.API_HOST),
     'import.meta.env.VITE_API_PORT': JSON.stringify(process.env.API_PORT),
     'import.meta.env.VITE_YANDEX_MAPS_API_KEY': JSON.stringify(process.env.YANDEX_MAPS_API_KEY),
+    'import.meta.env.VITE_DEFAULT_THEME': JSON.stringify(process.env.VITE_DEFAULT_THEME || 'light'),
+    'import.meta.env.VITE_LOG_LEVEL': JSON.stringify(process.env.VITE_LOG_LEVEL || (process.env.CLIENT_DEPLOY_TYPE === 'production' ? 'critical' : 'debug')),
   },
 })

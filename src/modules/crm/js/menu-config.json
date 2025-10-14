@@ -1,0 +1,52 @@
+{
+  "menuSections": [
+    {
+      "icon": "ClipboardList",
+      "routeName": "CRM",
+      "title": "Управление организациями",
+      "children": [
+        {
+          "routeName": "MyProjectsList",
+          "name": "Мои проекты"
+        },
+        {
+          "routeName": "ProjectCalendar",
+          "name": "Календарь задач"
+        },
+        {
+          "routeName": "KanbanBoard",
+          "name": "Доска задач"
+        },
+        {
+          "routeName": "ProjectsAndTasksManagement",
+          "name": "Проекты и задачи"
+        }
+      ]
+    },
+    {
+      "icon": "FolderKanban",
+      "routeName": "ProjectEd",
+      "title": "Управление проектами",
+      "children": [
+        {
+          "name": "Проекты",
+          "children": [
+            {
+              "routeName": "ProjectEdMain",
+              "name": "Главная"
+            },
+            {
+              "routeName": "ProjectEdMyProjects",
+              "name": "Мои проекты"
+            },
+            {
+              "routeName": "ProjectEdCreate",
+              "name": "Создать проект"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

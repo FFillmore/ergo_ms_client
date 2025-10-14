@@ -1,6 +1,41 @@
+<!--
+  КОМПОНЕНТ ГРУППЫ МЕНЮ
+  
+  Представляет отдельную секцию (группу) в боковом меню с возможностью
+  содержать подразделы. Поддерживает различные типы навигации и 
+  адаптивное отображение в зависимости от состояния родительского меню.
+  
+  Функциональность:
+  - Отображение основного пункта меню с иконкой и названием
+  - Сворачивание/разворачивание списка подразделов с анимацией
+  - Поддержка многоуровневой вложенности через компонент MenuItem
+  - Поддержка двух типов подразделов:
+    * Обычные Vue маршруты (RouterLink навигация)
+    * BI offcanvas вкладки (emit событие для открытия боковой панели)
+  - Адаптивное скрытие/показ элементов в зависимости от hover состояния
+  - Активное состояние для текущей страницы/раздела
+  - Плавные анимации появления подразделов с задержкой
+  
+  Props:
+  - data: объект секции меню из menu-sections.js
+  - isOpen: состояние открытости группы
+  - isCollapsed: состояние сворачивания родительского меню
+  - isHovering: состояние наведения на свернутое меню
+  - currentPage: текущая активная страница для подсветки
+  - nestedOpenStates: объект с состояниями открытости вложенных групп
+  
+  События:
+  - toggle: переключение состояния группы
+  - navigate: навигация для offcanvas вкладок
+  - reset-page: сброс текущей страницы
+  - toggle-nested: переключение состояния вложенной группы
+-->
+
 <script setup>
 import { ChevronRight, Dot } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import MenuItem from './MenuItem.vue'
 
 const props = defineProps({
   data: { type: Object, required: true },
@@ -8,27 +43,192 @@ const props = defineProps({
   isCollapsed: { type: Boolean, required: true },
   isHovering: { type: Boolean, required: true },
   currentPage: { type: String, required: true },
+  nestedOpenStates: { type: Object, default: () => ({}) },
 })
 
 const showFull = computed(() => props.isCollapsed || props.isHovering)
 
-const emit = defineEmits(['toggle', 'action', 'navigate', 'reset-page'])
+// Объединяем list и children в один массив для отображения
+const menuItems = computed(() => {
+  const items = []
+  if (props.data.list) {
+    items.push(...props.data.list)
+  }
+  if (props.data.children) {
+    items.push(...props.data.children)
+  }
+  return items
+})
 
-function emitNavigate(item) {
-  if (item.page) {
-    emit('navigate', item)
+// Проверяем, есть ли вообще элементы для отображения
+const hasMenuItems = computed(() => {
+  return (props.data.list && props.data.list.length > 0) || 
+         (props.data.children && props.data.children.length > 0)
+})
+
+const router = useRouter()
+const route = useRoute()
+const emit = defineEmits(['toggle', 'action', 'navigate', 'reset-page', 'toggle-nested'])
+
+const isCurrentRoute = computed(() => {
+  return route.name === props.data.routeName
+})
+
+const isCurrentGroupPage = computed(() => {
+  // Проверяем, находится ли пользователь на основной странице группы
+  if (route.name === props.data.routeName) {
+    return true
+  }
+  
+  // Проверяем, находится ли пользователь на одной из подстраниц группы
+  if (menuItems.value.length > 0) {
+    return menuItems.value.some(item => {
+      // Для обычных Vue страниц
+      if (item.routeName && route.name === item.routeName) {
+        return true
+      }
+      
+      // Для BI offcanvas страниц - проверяем что мы находимся на BI странице
+      if (item.isOffcanvas && item.page === props.currentPage) {
+        // Дополнительно проверяем, что мы действительно на BI странице
+        if (route.name === 'BI' || route.path.startsWith('/bi')) {
+          return true
+        }
+      }
+      
+      // Для BI элементов с подвкладками (только с разделителями)
+      if (item.isOffcanvas && item.page && props.currentPage && item.page.length > 2) {
+        if (props.currentPage.startsWith(item.page + '-') || 
+            props.currentPage.startsWith(item.page + '_') || 
+            props.currentPage.startsWith(item.page + '.')) {
+          return true
+        }
+      }
+      
+      // Для BI элементов с page без isOffcanvas флага
+      if (item.page && !item.isOffcanvas && item.page === props.currentPage) {
+        return true
+      }
+      
+      // Дополнительная проверка для BI элементов с иерархией подвкладок
+      // Только если currentPage начинается с itemPage и есть разделитель (более строгая проверка)
+      if (item.page && props.currentPage && item.page.length > 2) {
+        const itemPage = item.page.toLowerCase()
+        const currentPage = props.currentPage.toLowerCase()
+        
+        // Проверяем только если currentPage начинается с itemPage + разделитель
+        if (currentPage.startsWith(itemPage + '-') || currentPage.startsWith(itemPage + '_') || 
+            currentPage.startsWith(itemPage + '.')) {
+          return true
+        }
+      }
+      
+      return false
+    })
+  }
+  
+  return false
+})
+
+// Рекурсивная функция для проверки активности всех дочерних элементов
+const checkChildrenActiveRecursive = (children, currentPage, currentRoute) => {
+  if (!children || children.length === 0) return false
+  
+  return children.some(item => {
+    // Проверяем прямую активность элемента
+    if (item.routeName && currentRoute === item.routeName) {
+      return true
+    }
+    
+    // Для BI offcanvas страниц
+    if (item.isOffcanvas && item.page === currentPage) {
+      if (route.name === 'BI' || route.path.startsWith('/bi')) {
+        return true
+      }
+    }
+    
+    // Для BI элементов с подвкладками
+    if (item.page && currentPage && item.page.length > 2) {
+      if (currentPage.startsWith(item.page + '-') ||
+          currentPage.startsWith(item.page + '_') ||
+          currentPage.startsWith(item.page + '.')) {
+        return true
+      }
+    }
+    
+    // Для BI элементов с page без isOffcanvas флага
+    if (item.page && !item.isOffcanvas && item.page === currentPage) {
+      return true
+    }
+    
+    // РЕКУРСИВНО проверяем дочерние элементы
+    if (item.children && item.children.length > 0) {
+      return checkChildrenActiveRecursive(item.children, currentPage, currentRoute)
+    }
+    
+    return false
+  })
+}
+
+// Новый computed для выделения основного элемента меню с поддержкой полной иерархии
+const shouldHighlightMainItem = computed(() => {
+  // Выделяем если пользователь находится на основной странице группы
+  if (route.name === props.data.routeName) {
+    return true
+  }
+  
+  // Выделяем если пользователь находится на любой подстранице этой группы (с рекурсивной проверкой)
+  if (menuItems.value.length > 0) {
+    return checkChildrenActiveRecursive(menuItems.value, props.currentPage, route.name)
+  }
+  
+  return false
+})
+
+
+
+// Обработчик переключения вложенных групп
+function handleToggleNested(groupId) {
+  emit('toggle-nested', groupId)
+}
+
+// Обработчик навигации для вложенных элементов
+function handleNestedNavigate(item) {
+  emit('navigate', item)
+}
+
+function routeClick(event) {
+  event.preventDefault() // Всегда блокируем стандартную навигацию RouterLink
+  
+  if (hasMenuItems.value) {
+    // Если у элемента есть подменю
+    if (props.isOpen) {
+      // Если группа открыта - просто закрываем, не переходим никуда
+      emit('toggle')
+    } 
+    else {
+      // Если группа закрыта - открываем
+      emit('toggle')
+      
+      // Переходим на основную страницу только если пользователь НЕ находится в пределах этой группы
+      if (!isCurrentGroupPage.value) {
+        router.push({ name: props.data.routeName })
+      }
+    }
+  } else {
+    // Если подменю нет - просто переходим на страницу
+    router.push({ name: props.data.routeName })
   }
 }
+
 </script>
 
 <template>
   <li class="side-menu__group side-group">
-    <RouterLink
-      :to="{ name: data.routeName }"
+    <div
       class="side-title nav-btn"
-      active-class="side-title--active"
-      exact-active-class="side-title--exact-active"
-      @click="$emit('toggle'); $emit('reset-page')"
+      :class="{ 'side-title--active': shouldHighlightMainItem }"
+      @click="routeClick($event)"
     >
       <div class="side-title__label">
         <div class="side-icon icon-flex">
@@ -38,66 +238,28 @@ function emitNavigate(item) {
           {{ data.title }}
         </div>
       </div>
-      <div v-if="isHovering && data.list" class="nav-icon icon-flex">
+      <div v-if="isHovering && hasMenuItems" class="nav-icon icon-flex">
         <ChevronRight :size="20" :class="{ rotated: isOpen }" />
       </div>
-    </RouterLink>
+    </div>
 
     <ul
-      v-if="data.list"
+      v-if="hasMenuItems"
       class="side-group__list"
       :class="showFull ? (isOpen ? 'is-open' : '') : ''"
     >
-      <li
-        v-for="(item, index) in data.list"
+      <MenuItem
+        v-for="(item, index) in menuItems"
         :key="index"
-        class="side-group__list-item"
+        :item="item"
+        :level="0"
+        :isHovering="isHovering"
+        :currentPage="currentPage"
+        :openStates="nestedOpenStates"
         :style="{ transitionDelay: `${index * 50}ms` }"
-      >
-        <!-- 🔷 BI-вкладки -->
-        <template v-if="item.isOffcanvas">
-          <a
-            href="#"
-            class="side-subtitle nav-btn"
-            :class="{ 'side-subtitle--active': item.page === currentPage }"
-            @click.prevent="emitNavigate(item)"
-          >
-            <div class="side-subtitle__label">
-              <div class="nav-icon icon-flex"><Dot :size="20" /></div>
-              <div
-                v-if="showFull"
-                class="d-inline-block text-truncate side-subtitle__name"
-                style="max-width: 9.375rem"
-                :title="item.name"
-              >
-                {{ item.name }}
-              </div>
-            </div>
-          </a>
-        </template>
-
-        <!-- 🔶 Обычные Vue страницы -->
-        <template v-else>
-          <RouterLink
-            :to="{ name: item.path }"
-            class="side-subtitle nav-btn"
-            active-class="side-subtitle--active"
-            exact-active-class="side-subtitle--exact-active"
-          >
-            <div class="side-subtitle__label">
-              <div class="nav-icon icon-flex"><Dot :size="20" /></div>
-              <div
-                v-if="showFull"
-                class="d-inline-block text-truncate side-subtitle__name"
-                style="max-width: 9.375rem"
-                :title="item.name"
-              >
-                {{ item.name }}
-              </div>
-            </div>
-          </RouterLink>
-        </template>
-      </li>
+        @navigate="handleNestedNavigate"
+        @toggle-group="handleToggleNested"
+      />
     </ul>
   </li>
 </template>
@@ -115,7 +277,9 @@ function emitNavigate(item) {
   text-decoration: none;
 
   &__label {
-    @include flex-row-gap($padding-internal, center, space-between);
+    @include flex-row-gap($padding-internal, center);
+    flex: 1;
+    min-width: 0; // Позволяет flex элементам сжиматься ниже их естественной ширины
   }
 }
 
@@ -150,6 +314,13 @@ function emitNavigate(item) {
 
 .side-title__name {
   white-space: nowrap;
+}
+
+.side-subtitle__name {
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: unset;
+  flex: 1;
 }
 
 .nav-icon svg {

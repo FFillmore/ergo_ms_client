@@ -1,0 +1,44 @@
+{
+  "menuSections": [
+    {
+      "icon": "GraduationCap",
+      "routeName": "LMS",
+      "title": "Управление обучением",
+      "list": [
+        {
+          "routeName": "LMSDashboard",
+          "name": "Панель пользователя"
+        },
+        {
+          "routeName": "LMSCatalog",
+          "name": "Каталог курсов"
+        },
+        {
+          "routeName": "LMSCourses",
+          "name": "Мои курсы"
+        },
+        {
+          "routeName": "LMSCalendar",
+          "name": "Календарь"
+        },
+        {
+          "routeName": "LMSGrades",
+          "name": "Оценки"
+        },
+        {
+          "routeName": "LMSBadges",
+          "name": "Достижения"
+        },
+        {
+          "routeName": "LMSLessonsManagement",
+          "name": "Управление курсами"
+        },
+        {
+          "routeName": "LMSCategoriesAndFormats",
+          "name": "Структура курсов"
+        }
+      ]
+    }
+  ]
+}
+

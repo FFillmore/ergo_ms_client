@@ -1,0 +1,56 @@
+{
+  "menuSections": [
+    {
+      "icon": "ChartBarStacked",
+      "routeName": "ExpertSystem",
+      "title": "Анализ вакансий",
+      "list": [
+        { 
+          "routeName": "ChoiceRole", 
+          "name": "Выбор роли"
+        },
+        { 
+          "routeName": "Skills", 
+          "name": "Навыки"
+        },
+        { 
+          "routeName": "Profile", 
+          "name": "Профиль"
+        },
+        { 
+          "routeName": "Groups", 
+          "name": "Группы"
+        },
+        { 
+          "routeName": "Vacancies", 
+          "name": "Вакансии"
+        },
+        { 
+          "routeName": "Proforientation", 
+          "name": "Профориентация"
+        },
+        { 
+          "routeName": "Profession", 
+          "name": "Менеджер профессий"
+        },
+        { 
+          "routeName": "OrientationTest", 
+          "name": "Менеджер тестов"
+        },
+        { 
+          "routeName": "AllTests", 
+          "name": "Управление тестами для навыков"
+        },
+        { 
+          "routeName": "StudentCourses", 
+          "name": "Рекомендованные курсы"
+        },
+        { 
+          "routeName": "StudentsList", 
+          "name": "Студенты"
+        }
+      ]
+    }
+  ]
+}
+
